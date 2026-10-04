@@ -184,7 +184,6 @@ placeholder="Digite a senha">
 
 </section>
 
-
 <section id="inicio" class="tela">
 
 <h2>📚 9° 4</h2>
@@ -203,7 +202,6 @@ placeholder="Digite a senha">
 
 </section>
 
-
 <section id="materias" class="tela">
 
 <button class="voltar" onclick="voltarInicio()">
@@ -215,25 +213,17 @@ placeholder="Digite a senha">
 <div class="materias">
 
 <button onclick="abrirMateria('Matemática')">➗ Matemática</button>
-
 <button onclick="abrirMateria('Português')">📖 Português</button>
-
 <button onclick="abrirMateria('Ciências')">🔬 Ciências</button>
-
 <button onclick="abrirMateria('História')">🏛️ História</button>
-
 <button onclick="abrirMateria('Geografia')">🌎 Geografia</button>
-
 <button onclick="abrirMateria('Inglês')">🇺🇸 Inglês</button>
-
 <button onclick="abrirMateria('Educação Física')">⚽ Educação Física</button>
-
 <button onclick="abrirMateria('Artes')">🎨 Artes</button>
 
 </div>
 
 </section>
-
 
 <section id="conteudos" class="tela">
 
@@ -253,30 +243,17 @@ oninput="mostrarConteudos()">
 
 </section>
 
-
 <section id="admin" class="tela">
 
 <h2>⚙️ ADM</h2>
 
 <select id="tipo">
-
-<option value="atividade">
-📚 Atividade
-</option>
-
-<option value="prova">
-📝 Prova
-</option>
-
-<option value="trabalho">
-📂 Trabalho
-</option>
-
+<option value="atividade">📚 Atividade</option>
+<option value="prova">📝 Prova</option>
+<option value="trabalho">📂 Trabalho</option>
 </select>
 
-
 <select id="materia">
-
 <option>Matemática</option>
 <option>Português</option>
 <option>Ciências</option>
@@ -285,9 +262,7 @@ oninput="mostrarConteudos()">
 <option>Inglês</option>
 <option>Educação Física</option>
 <option>Artes</option>
-
 </select>
-
 
 <input type="date" id="data">
 
@@ -312,476 +287,773 @@ accept="image/*">
 
 </section>
 
-
 <script>
+
+/* ==============================
+   SUPABASE
+============================== */
+
+const SUPABASE_URL =
+"https://cmavcmwkhnftuakctwtd.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_7vEQ2PNBg7NefeUlHq75Bw_lUkXh60x";
+
+
+/* ==============================
+   CONFIGURAÇÃO
+============================== */
 
 const SENHA_ALUNO = "2026";
 const SENHA_ADM = "1991";
 
-let conteudos =
-JSON.parse(localStorage.getItem("conteudos9x4")) || [];
+const API =
+SUPABASE_URL + "/rest/v1/conteudos";
+
+const STORAGE =
+SUPABASE_URL + "/storage/v1/object/imagens";
+
+let conteudos = [];
 
 let tipoAtual = "";
 let materiaAtual = "";
 
 
+/* ==============================
+   CABEÇALHOS
+============================== */
+
+function headers(){
+
+    return {
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json"
+    };
+
+}
+
+
+/* ==============================
+   CARREGAR CONTEÚDOS
+============================== */
+
+async function carregarConteudos(){
+
+    try{
+
+        let resposta = await fetch(
+            API + "?select=*&order=data.asc",
+            {
+                method:"GET",
+                headers:headers()
+            }
+        );
+
+        if(!resposta.ok){
+
+            throw new Error(
+                "Erro HTTP " + resposta.status
+            );
+
+        }
+
+        conteudos = await resposta.json();
+
+        if(tipoAtual && materiaAtual){
+
+            mostrarConteudos();
+
+        }
+
+        if(document
+        .getElementById("admin")
+        .classList.contains("ativa")){
+
+            mostrarAdmin();
+
+        }
+
+    }catch(erro){
+
+        console.error(erro);
+
+        alert(
+            "Não foi possível carregar os conteúdos."
+        );
+
+    }
+
+}
+
+
+/* ==============================
+   LOADING
+============================== */
+
 setTimeout(() => {
 
-document.getElementById("loading").style.display="none";
+    document.getElementById("loading")
+    .style.display="none";
 
 },5000);
 
 
+/* ==============================
+   TROCAR TELA
+============================== */
+
 function tela(id){
 
-document.querySelectorAll(".tela")
-.forEach(t => t.classList.remove("ativa"));
+    document.querySelectorAll(".tela")
+    .forEach(t =>
+        t.classList.remove("ativa")
+    );
 
-document.getElementById(id)
-.classList.add("ativa");
+    document.getElementById(id)
+    .classList.add("ativa");
+
+}
+
+
+/* ==============================
+   LOGIN
+============================== */
+
+async function entrar(){
+
+    let senha =
+    document.getElementById("senha").value;
+
+    if(senha === SENHA_ALUNO){
+
+        tela("inicio");
+
+        await carregarConteudos();
+
+    }
+
+    else if(senha === SENHA_ADM){
+
+        tela("admin");
+
+        await carregarConteudos();
+
+        mostrarAdmin();
+
+    }
+
+    else{
+
+        alert("Senha incorreta!");
+
+    }
 
 }
 
 
-function entrar(){
-
-let senha =
-document.getElementById("senha").value;
-
-if(senha === SENHA_ALUNO){
-
-tela("inicio");
-
-}
-
-else if(senha === SENHA_ADM){
-
-tela("admin");
-
-mostrarAdmin();
-
-}
-
-else{
-
-alert("Senha incorreta!");
-
-}
-
-}
-
+/* ==============================
+   INÍCIO
+============================== */
 
 function voltarInicio(){
 
-tela("inicio");
+    tela("inicio");
 
 }
 
+
+/* ==============================
+   ABRIR TIPO
+============================== */
 
 function abrirTipo(tipo){
 
-tipoAtual = tipo;
+    tipoAtual = tipo;
 
-if(tipo === "atividade"){
+    if(tipo === "atividade"){
 
-document.getElementById("tituloTipo")
-.innerText="📚 Atividades";
+        document.getElementById("tituloTipo")
+        .innerText="📚 Atividades";
+
+    }
+
+    if(tipo === "prova"){
+
+        document.getElementById("tituloTipo")
+        .innerText="📝 Provas";
+
+    }
+
+    if(tipo === "trabalho"){
+
+        document.getElementById("tituloTipo")
+        .innerText="📂 Trabalhos";
+
+    }
+
+    tela("materias");
 
 }
 
-if(tipo === "prova"){
 
-document.getElementById("tituloTipo")
-.innerText="📝 Provas";
-
-}
-
-if(tipo === "trabalho"){
-
-document.getElementById("tituloTipo")
-.innerText="📂 Trabalhos";
-
-}
-
-tela("materias");
-
-}
-
+/* ==============================
+   ABRIR MATÉRIA
+============================== */
 
 function abrirMateria(materia){
 
-materiaAtual = materia;
+    materiaAtual = materia;
 
-document.getElementById("tituloMateria")
-.innerText = materia;
+    document.getElementById("tituloMateria")
+    .innerText = materia;
 
-document.getElementById("pesquisaData").value="";
+    document.getElementById("pesquisaData")
+    .value="";
 
-mostrarConteudos();
+    mostrarConteudos();
 
-tela("conteudos");
+    tela("conteudos");
 
 }
 
+
+/* ==============================
+   VOLTAR
+============================== */
 
 function voltarMaterias(){
 
-document.getElementById("pesquisaData").value="";
+    document.getElementById("pesquisaData")
+    .value="";
 
-tela("materias");
+    tela("materias");
 
 }
 
+
+/* ==============================
+   NORMALIZAR DATA
+============================== */
 
 function normalizarData(data){
 
-return data
-.replace(/\//g,".")
-.replace(/-/g,".")
-.replace(/\s/g,"")
-.split(".")
-.map(x => parseInt(x,10))
-.filter(x => !isNaN(x))
-.join(".");
+    return data
+    .replace(/\//g,".")
+    .replace(/-/g,".")
+    .replace(/\s/g,"")
+    .split(".")
+    .map(x => parseInt(x,10))
+    .filter(x => !isNaN(x))
+    .join(".");
 
 }
 
+
+/* ==============================
+   FORMATAR DATA
+============================== */
 
 function formatarData(data){
 
-if(!data) return "";
+    if(!data) return "";
 
-let partes=data.split("-");
+    let partes=data.split("-");
 
-if(partes.length===3){
+    if(partes.length===3){
 
-return partes[2]+"/"+partes[1]+"/"+partes[0];
+        return partes[2]+"/"+
+        partes[1]+"/"+
+        partes[0];
+
+    }
+
+    return data;
 
 }
 
-return data;
 
-}
-
+/* ==============================
+   MOSTRAR CONTEÚDOS
+============================== */
 
 function mostrarConteudos(){
 
-let lista =
-document.getElementById("listaConteudos");
+    let lista =
+    document.getElementById(
+        "listaConteudos"
+    );
 
-lista.innerHTML="";
+    lista.innerHTML="";
 
-let pesquisa =
-normalizarData(
-document.getElementById("pesquisaData").value
-);
+    let pesquisa =
+    normalizarData(
+        document.getElementById(
+            "pesquisaData"
+        ).value
+    );
 
+    let encontrados =
+    conteudos.filter(item => {
 
-let encontrados =
-conteudos.filter(item => {
+        if(item.tipo !== tipoAtual)
+            return false;
 
-if(item.tipo !== tipoAtual)
-return false;
+        if(item.materia !== materiaAtual)
+            return false;
 
-if(item.materia !== materiaAtual)
-return false;
+        if(pesquisa === "")
+            return true;
 
-if(pesquisa === "")
-return true;
+        return normalizarData(
+            item.data
+        ).includes(pesquisa);
 
-return normalizarData(item.data)
-.includes(pesquisa);
-
-});
-
-
-if(encontrados.length===0){
-
-lista.innerHTML=
-`<div class="msg-vazia">
-Nenhum conteúdo encontrado.
-</div>`;
-
-return;
-
-}
+    });
 
 
-encontrados.sort((a,b)=>
-a.data.localeCompare(b.data)
-);
+    if(encontrados.length===0){
+
+        lista.innerHTML=
+        `<div class="msg-vazia">
+        Nenhum conteúdo encontrado.
+        </div>`;
+
+        return;
+
+    }
 
 
-encontrados.forEach(item => {
+    encontrados.forEach(item => {
 
-let card =
-document.createElement("div");
+        let card =
+        document.createElement("div");
 
-card.className="card";
+        card.className="card";
 
-card.innerHTML=`
+        card.innerHTML=`
 
-<img src="${item.imagem}">
+        <img src="${item.imagem}">
 
-<div class="data">
-📅 ${formatarData(item.data)}
-</div>
+        <div class="data">
+        📅 ${formatarData(item.data)}
+        </div>
 
-`;
+        `;
 
-lista.appendChild(card);
+        lista.appendChild(card);
 
-});
-
-}
-
-
-function adicionar(){
-
-let tipo =
-document.getElementById("tipo").value;
-
-let materia =
-document.getElementById("materia").value;
-
-let data =
-document.getElementById("data").value;
-
-let arquivo =
-document.getElementById("imagem").files[0];
-
-
-if(!data){
-
-alert("Escolha uma data!");
-
-return;
+    });
 
 }
 
 
-if(!arquivo){
+/* ==============================
+   ADICIONAR
+============================== */
 
-alert("Escolha uma imagem!");
+async function adicionar(){
 
-return;
+    let tipo =
+    document.getElementById("tipo").value;
+
+    let materia =
+    document.getElementById("materia").value;
+
+    let data =
+    document.getElementById("data").value;
+
+    let arquivo =
+    document.getElementById("imagem").files[0];
+
+
+    if(!data){
+
+        alert("Escolha uma data!");
+
+        return;
+
+    }
+
+
+    if(!arquivo){
+
+        alert("Escolha uma imagem!");
+
+        return;
+
+    }
+
+
+    try{
+
+        /* Nome único da imagem */
+
+        let nomeArquivo =
+        Date.now() + "_" +
+        arquivo.name.replace(
+            /[^a-zA-Z0-9._-]/g,
+            "_"
+        );
+
+
+        /* Upload */
+
+        let upload =
+        await fetch(
+            STORAGE + "/" +
+            nomeArquivo,
+            {
+                method:"POST",
+                headers:{
+                    "apikey":SUPABASE_KEY,
+                    "Authorization":
+                    "Bearer " + SUPABASE_KEY,
+                    "Content-Type":
+                    arquivo.type || "image/jpeg"
+                },
+                body:arquivo
+            }
+        );
+
+
+        if(!upload.ok){
+
+            let erro =
+            await upload.text();
+
+            throw new Error(erro);
+
+        }
+
+
+        /* URL pública */
+
+        let imagemURL =
+        SUPABASE_URL +
+        "/storage/v1/object/public/imagens/" +
+        encodeURIComponent(nomeArquivo);
+
+
+        /* Salvar no banco */
+
+        let resposta =
+        await fetch(
+            API,
+            {
+                method:"POST",
+                headers:{
+                    ...headers(),
+                    "Prefer":"return=representation"
+                },
+                body:JSON.stringify({
+
+                    tipo:tipo,
+
+                    materia:materia,
+
+                    data:data,
+
+                    imagem:imagemURL
+
+                })
+            }
+        );
+
+
+        if(!resposta.ok){
+
+            let erro =
+            await resposta.text();
+
+            throw new Error(erro);
+
+        }
+
+
+        alert(
+            "Adicionado com sucesso! ☁️"
+        );
+
+
+        document.getElementById("data")
+        .value="";
+
+        document.getElementById("imagem")
+        .value="";
+
+
+        await carregarConteudos();
+
+        mostrarAdmin();
+
+
+    }catch(erro){
+
+        console.error(erro);
+
+        alert(
+            "Erro ao adicionar:\n" +
+            erro.message
+        );
+
+    }
 
 }
 
 
-let leitor =
-new FileReader();
-
-
-leitor.onload=function(e){
-
-let novo={
-
-id:Date.now(),
-
-tipo:tipo,
-
-materia:materia,
-
-data:data,
-
-imagem:e.target.result
-
-};
-
-
-conteudos.push(novo);
-
-
-localStorage.setItem(
-"conteudos9x4",
-JSON.stringify(conteudos)
-);
-
-
-alert("Adicionado com sucesso!");
-
-
-document.getElementById("data").value="";
-
-document.getElementById("imagem").value="";
-
-
-mostrarAdmin();
-
-};
-
-
-leitor.readAsDataURL(arquivo);
-
-}
-
+/* ==============================
+   MOSTRAR ADMIN
+============================== */
 
 function mostrarAdmin(){
 
-let lista =
-document.getElementById("listaAdmin");
+    let lista =
+    document.getElementById(
+        "listaAdmin"
+    );
 
-lista.innerHTML="";
-
-
-if(conteudos.length===0){
-
-lista.innerHTML=
-`<div class="msg-vazia">
-Nenhum conteúdo adicionado.
-</div>`;
-
-return;
-
-}
+    lista.innerHTML="";
 
 
-let copia=[...conteudos];
+    if(conteudos.length===0){
 
-copia.reverse();
+        lista.innerHTML=
+        `<div class="msg-vazia">
+        Nenhum conteúdo adicionado.
+        </div>`;
 
+        return;
 
-copia.forEach(item=>{
-
-let div=
-document.createElement("div");
-
-div.className="admin-item";
-
-
-let nomeTipo="";
+    }
 
 
-if(item.tipo==="atividade")
-nomeTipo="📚 Atividade";
+    let copia=[...conteudos];
 
-if(item.tipo==="prova")
-nomeTipo="📝 Prova";
-
-if(item.tipo==="trabalho")
-nomeTipo="📂 Trabalho";
+    copia.reverse();
 
 
-div.innerHTML=`
+    copia.forEach(item=>{
 
-<img src="${item.imagem}">
+        let div=
+        document.createElement("div");
 
-<div style="margin-top:8px">
-<b>${nomeTipo}</b>
-</div>
-
-<div class="materia">
-📚 ${item.materia}
-</div>
-
-<div class="data">
-📅 ${formatarData(item.data)}
-</div>
-
-<div class="acoes">
-
-<button onclick="editar(${item.id})">
-✏️ Editar
-</button>
-
-<button onclick="excluir(${item.id})">
-🗑️ Excluir
-</button>
-
-</div>
-
-`;
+        div.className="admin-item";
 
 
-lista.appendChild(div);
-
-});
-
-}
+        let nomeTipo="";
 
 
-function editar(id){
+        if(item.tipo==="atividade")
+            nomeTipo="📚 Atividade";
 
-let item =
-conteudos.find(x=>x.id===id);
+        if(item.tipo==="prova")
+            nomeTipo="📝 Prova";
 
-if(!item) return;
-
-
-let novaData =
-prompt(
-"Digite a nova data (AAAA-MM-DD):",
-item.data
-);
+        if(item.tipo==="trabalho")
+            nomeTipo="📂 Trabalho";
 
 
-if(novaData===null)
-return;
+        div.innerHTML=`
+
+        <img src="${item.imagem}">
+
+        <div style="margin-top:8px">
+        <b>${nomeTipo}</b>
+        </div>
+
+        <div class="materia">
+        📚 ${item.materia}
+        </div>
+
+        <div class="data">
+        📅 ${formatarData(item.data)}
+        </div>
+
+        <div class="acoes">
+
+        <button onclick="editar(${item.id})">
+        ✏️ Editar
+        </button>
+
+        <button onclick="excluir(${item.id})">
+        🗑️ Excluir
+        </button>
+
+        </div>
+
+        `;
 
 
-if(novaData.trim()===""){
+        lista.appendChild(div);
 
-alert("Data inválida!");
-
-return;
+    });
 
 }
 
 
-item.data=novaData;
+/* ==============================
+   EDITAR
+============================== */
+
+async function editar(id){
+
+    let item =
+    conteudos.find(x => x.id === id);
+
+    if(!item) return;
 
 
-localStorage.setItem(
-"conteudos9x4",
-JSON.stringify(conteudos)
-);
+    let novaData =
+    prompt(
+        "Digite a nova data (AAAA-MM-DD):",
+        item.data
+    );
 
 
-mostrarAdmin();
+    if(novaData===null)
+        return;
 
 
-alert("Editado com sucesso!");
+    if(novaData.trim()===""){
+
+        alert("Data inválida!");
+
+        return;
+
+    }
+
+
+    try{
+
+        let resposta =
+        await fetch(
+            API + "?id=eq." + id,
+            {
+                method:"PATCH",
+                headers:{
+                    ...headers(),
+                    "Prefer":"return=minimal"
+                },
+                body:JSON.stringify({
+                    data:novaData
+                })
+            }
+        );
+
+
+        if(!resposta.ok){
+
+            throw new Error(
+                await resposta.text()
+            );
+
+        }
+
+
+        item.data=novaData;
+
+        mostrarAdmin();
+
+        alert(
+            "Editado com sucesso! ☁️"
+        );
+
+    }catch(erro){
+
+        console.error(erro);
+
+        alert(
+            "Erro ao editar:\n" +
+            erro.message
+        );
+
+    }
 
 }
 
 
-function excluir(id){
+/* ==============================
+   EXCLUIR
+============================== */
 
-let confirmar =
-confirm(
-"Tem certeza que deseja excluir?"
-);
+async function excluir(id){
 
-
-if(!confirmar)
-return;
-
-
-conteudos =
-conteudos.filter(
-item=>item.id!==id
-);
+    let confirmar =
+    confirm(
+        "Tem certeza que deseja excluir?"
+    );
 
 
-localStorage.setItem(
-"conteudos9x4",
-JSON.stringify(conteudos)
-);
+    if(!confirmar)
+        return;
 
 
-mostrarAdmin();
+    try{
+
+        let resposta =
+        await fetch(
+            API + "?id=eq." + id,
+            {
+                method:"DELETE",
+                headers:headers()
+            }
+        );
+
+
+        if(!resposta.ok){
+
+            throw new Error(
+                await resposta.text()
+            );
+
+        }
+
+
+        conteudos =
+        conteudos.filter(
+            item => item.id !== id
+        );
+
+
+        mostrarAdmin();
+
+        alert(
+            "Excluído com sucesso! ☁️"
+        );
+
+    }catch(erro){
+
+        console.error(erro);
+
+        alert(
+            "Erro ao excluir:\n" +
+            erro.message
+        );
+
+    }
 
 }
 
+
+/* ==============================
+   SAIR
+============================== */
 
 function sair(){
 
-document.getElementById("senha").value="";
+    document.getElementById("senha")
+    .value="";
 
-tela("login");
+    tela("login");
 
 }
+
+
+/* ==============================
+   CARREGAR AO ABRIR
+============================== */
+
+carregarConteudos();
 
 </script>
 
