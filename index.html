@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9° 4</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#0f1117;
+    color:white;
+    min-height:100vh;
+}
+
+header{
+    background:#171a23;
+    padding:18px;
+    text-align:center;
+    font-size:25px;
+    font-weight:bold;
+    border-bottom:1px solid #292e3b;
+}
+
+.tela{
+    display:none;
+    padding:25px 18px;
+    max-width:600px;
+    margin:auto;
+}
+
+.ativa{
+    display:block;
+}
+
+h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+input,select,button{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    border-radius:10px;
+    border:none;
+    font-size:16px;
+}
+
+input,select{
+    background:#20242e;
+    color:white;
+}
+
+button{
+    background:#286cff;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d58d8;
+}
+
+.btn-sec{
+    background:#292e3b;
+}
+
+.card{
+    background:#191d27;
+    border:1px solid #292e3b;
+    border-radius:14px;
+    padding:12px;
+    margin:12px 0;
+}
+
+.card img{
+    width:100%;
+    max-height:400px;
+    object-fit:contain;
+    border-radius:10px;
+    background:#0b0d12;
+}
+
+.data{
+    margin-top:10px;
+    font-size:15px;
+    color:#bbb;
+}
+
+.materia{
+    color:#4d8dff;
+    font-weight:bold;
+    margin-top:6px;
+}
+
+.acoes{
+    display:flex;
+    gap:8px;
+}
+
+.acoes button{
+    flex:1;
+}
+
+.voltar{
+    margin-bottom:15px;
+    background:#292e3b;
+}
+
+.materias{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.materias button{
+    min-height:60px;
+}
+
+.msg-vazia{
+    text-align:center;
+    color:#888;
+    padding:30px 10px;
+}
+
+.admin-item{
+    border:1px solid #292e3b;
+    padding:12px;
+    border-radius:12px;
+    margin:10px 0;
+}
+
+.admin-item img{
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    border-radius:8px;
+}
+
+#loading{
+    position:fixed;
+    inset:0;
+    background:#0f1117;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    font-size:28px;
+    font-weight:bold;
+}
+
+@media(max-width:400px){
+    .materias{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading">9° 4</div>
+
+<header>9° 4</header>
+
+<section id="login" class="tela ativa">
+
+<h2>🔐 Entrar</h2>
+
+<input
+type="password"
+id="senha"
+placeholder="Digite a senha">
+
+<button onclick="entrar()">Entrar</button>
+
+</section>
+
+
+<section id="inicio" class="tela">
+
+<h2>📚 9° 4</h2>
+
+<button onclick="abrirTipo('atividade')">
+📚 Atividades
+</button>
+
+<button onclick="abrirTipo('prova')">
+📝 Provas
+</button>
+
+<button onclick="abrirTipo('trabalho')">
+📂 Trabalhos
+</button>
+
+</section>
+
+
+<section id="materias" class="tela">
+
+<button class="voltar" onclick="voltarInicio()">
+⬅ Voltar
+</button>
+
+<h2 id="tituloTipo"></h2>
+
+<div class="materias">
+
+<button onclick="abrirMateria('Matemática')">➗ Matemática</button>
+
+<button onclick="abrirMateria('Português')">📖 Português</button>
+
+<button onclick="abrirMateria('Ciências')">🔬 Ciências</button>
+
+<button onclick="abrirMateria('História')">🏛️ História</button>
+
+<button onclick="abrirMateria('Geografia')">🌎 Geografia</button>
+
+<button onclick="abrirMateria('Inglês')">🇺🇸 Inglês</button>
+
+<button onclick="abrirMateria('Educação Física')">⚽ Educação Física</button>
+
+<button onclick="abrirMateria('Artes')">🎨 Artes</button>
+
+</div>
+
+</section>
+
+
+<section id="conteudos" class="tela">
+
+<button class="voltar" onclick="voltarMaterias()">
+⬅ Voltar
+</button>
+
+<h2 id="tituloMateria"></h2>
+
+<input
+type="text"
+id="pesquisaData"
+placeholder="🔎 Pesquisar por data (ex: 1.6, 01/06...)"
+oninput="mostrarConteudos()">
+
+<div id="listaConteudos"></div>
+
+</section>
+
+
+<section id="admin" class="tela">
+
+<h2>⚙️ ADM</h2>
+
+<select id="tipo">
+
+<option value="atividade">
+📚 Atividade
+</option>
+
+<option value="prova">
+📝 Prova
+</option>
+
+<option value="trabalho">
+📂 Trabalho
+</option>
+
+</select>
+
+
+<select id="materia">
+
+<option>Matemática</option>
+<option>Português</option>
+<option>Ciências</option>
+<option>História</option>
+<option>Geografia</option>
+<option>Inglês</option>
+<option>Educação Física</option>
+<option>Artes</option>
+
+</select>
+
+
+<input type="date" id="data">
+
+<input
+type="file"
+id="imagem"
+accept="image/*">
+
+<button onclick="adicionar()">
+➕ Adicionar
+</button>
+
+<h2 style="margin-top:30px">
+📋 Conteúdos adicionados
+</h2>
+
+<div id="listaAdmin"></div>
+
+<button class="btn-sec" onclick="sair()">
+🚪 Sair
+</button>
+
+</section>
+
+
+<script>
+
+const SENHA_ALUNO = "2026";
+const SENHA_ADM = "1991";
+
+let conteudos =
+JSON.parse(localStorage.getItem("conteudos9x4")) || [];
+
+let tipoAtual = "";
+let materiaAtual = "";
+
+
+setTimeout(() => {
+
+document.getElementById("loading").style.display="none";
+
+},5000);
+
+
+function tela(id){
+
+document.querySelectorAll(".tela")
+.forEach(t => t.classList.remove("ativa"));
+
+document.getElementById(id)
+.classList.add("ativa");
+
+}
+
+
+function entrar(){
+
+let senha =
+document.getElementById("senha").value;
+
+if(senha === SENHA_ALUNO){
+
+tela("inicio");
+
+}
+
+else if(senha === SENHA_ADM){
+
+tela("admin");
+
+mostrarAdmin();
+
+}
+
+else{
+
+alert("Senha incorreta!");
+
+}
+
+}
+
+
+function voltarInicio(){
+
+tela("inicio");
+
+}
+
+
+function abrirTipo(tipo){
+
+tipoAtual = tipo;
+
+if(tipo === "atividade"){
+
+document.getElementById("tituloTipo")
+.innerText="📚 Atividades";
+
+}
+
+if(tipo === "prova"){
+
+document.getElementById("tituloTipo")
+.innerText="📝 Provas";
+
+}
+
+if(tipo === "trabalho"){
+
+document.getElementById("tituloTipo")
+.innerText="📂 Trabalhos";
+
+}
+
+tela("materias");
+
+}
+
+
+function abrirMateria(materia){
+
+materiaAtual = materia;
+
+document.getElementById("tituloMateria")
+.innerText = materia;
+
+document.getElementById("pesquisaData").value="";
+
+mostrarConteudos();
+
+tela("conteudos");
+
+}
+
+
+function voltarMaterias(){
+
+document.getElementById("pesquisaData").value="";
+
+tela("materias");
+
+}
+
+
+function normalizarData(data){
+
+return data
+.replace(/\//g,".")
+.replace(/-/g,".")
+.replace(/\s/g,"")
+.split(".")
+.map(x => parseInt(x,10))
+.filter(x => !isNaN(x))
+.join(".");
+
+}
+
+
+function formatarData(data){
+
+if(!data) return "";
+
+let partes=data.split("-");
+
+if(partes.length===3){
+
+return partes[2]+"/"+partes[1]+"/"+partes[0];
+
+}
+
+return data;
+
+}
+
+
+function mostrarConteudos(){
+
+let lista =
+document.getElementById("listaConteudos");
+
+lista.innerHTML="";
+
+let pesquisa =
+normalizarData(
+document.getElementById("pesquisaData").value
+);
+
+
+let encontrados =
+conteudos.filter(item => {
+
+if(item.tipo !== tipoAtual)
+return false;
+
+if(item.materia !== materiaAtual)
+return false;
+
+if(pesquisa === "")
+return true;
+
+return normalizarData(item.data)
+.includes(pesquisa);
+
+});
+
+
+if(encontrados.length===0){
+
+lista.innerHTML=
+`<div class="msg-vazia">
+Nenhum conteúdo encontrado.
+</div>`;
+
+return;
+
+}
+
+
+encontrados.sort((a,b)=>
+a.data.localeCompare(b.data)
+);
+
+
+encontrados.forEach(item => {
+
+let card =
+document.createElement("div");
+
+card.className="card";
+
+card.innerHTML=`
+
+<img src="${item.imagem}">
+
+<div class="data">
+📅 ${formatarData(item.data)}
+</div>
+
+`;
+
+lista.appendChild(card);
+
+});
+
+}
+
+
+function adicionar(){
+
+let tipo =
+document.getElementById("tipo").value;
+
+let materia =
+document.getElementById("materia").value;
+
+let data =
+document.getElementById("data").value;
+
+let arquivo =
+document.getElementById("imagem").files[0];
+
+
+if(!data){
+
+alert("Escolha uma data!");
+
+return;
+
+}
+
+
+if(!arquivo){
+
+alert("Escolha uma imagem!");
+
+return;
+
+}
+
+
+let leitor =
+new FileReader();
+
+
+leitor.onload=function(e){
+
+let novo={
+
+id:Date.now(),
+
+tipo:tipo,
+
+materia:materia,
+
+data:data,
+
+imagem:e.target.result
+
+};
+
+
+conteudos.push(novo);
+
+
+localStorage.setItem(
+"conteudos9x4",
+JSON.stringify(conteudos)
+);
+
+
+alert("Adicionado com sucesso!");
+
+
+document.getElementById("data").value="";
+
+document.getElementById("imagem").value="";
+
+
+mostrarAdmin();
+
+};
+
+
+leitor.readAsDataURL(arquivo);
+
+}
+
+
+function mostrarAdmin(){
+
+let lista =
+document.getElementById("listaAdmin");
+
+lista.innerHTML="";
+
+
+if(conteudos.length===0){
+
+lista.innerHTML=
+`<div class="msg-vazia">
+Nenhum conteúdo adicionado.
+</div>`;
+
+return;
+
+}
+
+
+let copia=[...conteudos];
+
+copia.reverse();
+
+
+copia.forEach(item=>{
+
+let div=
+document.createElement("div");
+
+div.className="admin-item";
+
+
+let nomeTipo="";
+
+
+if(item.tipo==="atividade")
+nomeTipo="📚 Atividade";
+
+if(item.tipo==="prova")
+nomeTipo="📝 Prova";
+
+if(item.tipo==="trabalho")
+nomeTipo="📂 Trabalho";
+
+
+div.innerHTML=`
+
+<img src="${item.imagem}">
+
+<div style="margin-top:8px">
+<b>${nomeTipo}</b>
+</div>
+
+<div class="materia">
+📚 ${item.materia}
+</div>
+
+<div class="data">
+📅 ${formatarData(item.data)}
+</div>
+
+<div class="acoes">
+
+<button onclick="editar(${item.id})">
+✏️ Editar
+</button>
+
+<button onclick="excluir(${item.id})">
+🗑️ Excluir
+</button>
+
+</div>
+
+`;
+
+
+lista.appendChild(div);
+
+});
+
+}
+
+
+function editar(id){
+
+let item =
+conteudos.find(x=>x.id===id);
+
+if(!item) return;
+
+
+let novaData =
+prompt(
+"Digite a nova data (AAAA-MM-DD):",
+item.data
+);
+
+
+if(novaData===null)
+return;
+
+
+if(novaData.trim()===""){
+
+alert("Data inválida!");
+
+return;
+
+}
+
+
+item.data=novaData;
+
+
+localStorage.setItem(
+"conteudos9x4",
+JSON.stringify(conteudos)
+);
+
+
+mostrarAdmin();
+
+
+alert("Editado com sucesso!");
+
+}
+
+
+function excluir(id){
+
+let confirmar =
+confirm(
+"Tem certeza que deseja excluir?"
+);
+
+
+if(!confirmar)
+return;
+
+
+conteudos =
+conteudos.filter(
+item=>item.id!==id
+);
+
+
+localStorage.setItem(
+"conteudos9x4",
+JSON.stringify(conteudos)
+);
+
+
+mostrarAdmin();
+
+}
+
+
+function sair(){
+
+document.getElementById("senha").value="";
+
+tela("login");
+
+}
+
+</script>
+
+</body>
+</html>
