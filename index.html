@@ -180,7 +180,7 @@ type="password"
 id="senha"
 placeholder="Digite a senha">
 
-<button onclick="entrar()">Entrar</button>
+<button type="button" onclick="entrar()">Entrar</button>
 
 </section>
 
@@ -188,15 +188,15 @@ placeholder="Digite a senha">
 
 <h2>📚 9° 4</h2>
 
-<button onclick="abrirTipo('atividade')">
+<button type="button" onclick="abrirTipo('atividade')">
 📚 Atividades
 </button>
 
-<button onclick="abrirTipo('prova')">
+<button type="button" onclick="abrirTipo('prova')">
 📝 Provas
 </button>
 
-<button onclick="abrirTipo('trabalho')">
+<button type="button" onclick="abrirTipo('trabalho')">
 📂 Trabalhos
 </button>
 
@@ -204,7 +204,7 @@ placeholder="Digite a senha">
 
 <section id="materias" class="tela">
 
-<button class="voltar" onclick="voltarInicio()">
+<button type="button" class="voltar" onclick="voltarInicio()">
 ⬅ Voltar
 </button>
 
@@ -212,14 +212,14 @@ placeholder="Digite a senha">
 
 <div class="materias">
 
-<button onclick="abrirMateria('Matemática')">➗ Matemática</button>
-<button onclick="abrirMateria('Português')">📖 Português</button>
-<button onclick="abrirMateria('Ciências')">🔬 Ciências</button>
-<button onclick="abrirMateria('História')">🏛️ História</button>
-<button onclick="abrirMateria('Geografia')">🌎 Geografia</button>
-<button onclick="abrirMateria('Inglês')">🇺🇸 Inglês</button>
-<button onclick="abrirMateria('Educação Física')">⚽ Educação Física</button>
-<button onclick="abrirMateria('Artes')">🎨 Artes</button>
+<button type="button" onclick="abrirMateria('Matemática')">➗ Matemática</button>
+<button type="button" onclick="abrirMateria('Português')">📖 Português</button>
+<button type="button" onclick="abrirMateria('Ciências')">🔬 Ciências</button>
+<button type="button" onclick="abrirMateria('História')">🏛️ História</button>
+<button type="button" onclick="abrirMateria('Geografia')">🌎 Geografia</button>
+<button type="button" onclick="abrirMateria('Inglês')">🇺🇸 Inglês</button>
+<button type="button" onclick="abrirMateria('Educação Física')">⚽ Educação Física</button>
+<button type="button" onclick="abrirMateria('Artes')">🎨 Artes</button>
 
 </div>
 
@@ -227,7 +227,7 @@ placeholder="Digite a senha">
 
 <section id="conteudos" class="tela">
 
-<button class="voltar" onclick="voltarMaterias()">
+<button type="button" class="voltar" onclick="voltarMaterias()">
 ⬅ Voltar
 </button>
 
@@ -269,9 +269,15 @@ oninput="mostrarConteudos()">
 <input
 type="file"
 id="imagem"
-accept="image/*">
+accept="image/*"
+onchange="arquivoSelecionado()">
 
-<button onclick="adicionar()">
+<div id="nomeArquivo"
+style="font-size:14px;color:#aaa;margin:5px 0;">
+Nenhuma imagem selecionada
+</div>
+
+<button type="button" id="btnAdicionar" onclick="adicionar()">
 ➕ Adicionar
 </button>
 
@@ -281,7 +287,7 @@ accept="image/*">
 
 <div id="listaAdmin"></div>
 
-<button class="btn-sec" onclick="sair()">
+<button type="button" class="btn-sec" onclick="sair()">
 🚪 Sair
 </button>
 
@@ -365,9 +371,11 @@ async function carregarConteudos(){
 
         }
 
-        if(document
-        .getElementById("admin")
-        .classList.contains("ativa")){
+        const admin =
+        document.getElementById("admin");
+
+        if(admin &&
+           admin.classList.contains("ativa")){
 
             mostrarAdmin();
 
@@ -648,6 +656,33 @@ function mostrarConteudos(){
 
 
 /* ==============================
+   FOTO SELECIONADA
+============================== */
+
+function arquivoSelecionado(){
+
+    const campo =
+    document.getElementById("imagem");
+
+    const nome =
+    document.getElementById("nomeArquivo");
+
+    if(campo.files && campo.files.length > 0){
+
+        nome.innerText =
+        "📷 " + campo.files[0].name;
+
+    }else{
+
+        nome.innerText =
+        "Nenhuma imagem selecionada";
+
+    }
+
+}
+
+
+/* ==============================
    ADICIONAR
 ============================== */
 
@@ -662,8 +697,14 @@ async function adicionar(){
     let data =
     document.getElementById("data").value;
 
+    let campoImagem =
+    document.getElementById("imagem");
+
     let arquivo =
-    document.getElementById("imagem").files[0];
+    campoImagem.files &&
+    campoImagem.files.length > 0
+    ? campoImagem.files[0]
+    : null;
 
 
     if(!data){
@@ -684,9 +725,20 @@ async function adicionar(){
     }
 
 
+    const botao =
+    document.getElementById("btnAdicionar");
+
     try{
 
-        /* Nome único da imagem */
+        botao.disabled = true;
+
+        botao.innerText =
+        "⏳ Enviando...";
+
+
+        /* ==========================
+           NOME ÚNICO
+        ========================== */
 
         let nomeArquivo =
         Date.now() + "_" +
@@ -696,21 +748,23 @@ async function adicionar(){
         );
 
 
-        /* Upload */
+        /* ==========================
+           UPLOAD DA IMAGEM
+        ========================== */
 
         let upload =
         await fetch(
             STORAGE + "/" +
-            nomeArquivo,
+            encodeURIComponent(nomeArquivo),
             {
                 method:"POST",
+
                 headers:{
                     "apikey":SUPABASE_KEY,
-                    "Authorization":
-                    "Bearer " + SUPABASE_KEY,
                     "Content-Type":
                     arquivo.type || "image/jpeg"
                 },
+
                 body:arquivo
             }
         );
@@ -721,12 +775,17 @@ async function adicionar(){
             let erro =
             await upload.text();
 
-            throw new Error(erro);
+            throw new Error(
+                "Erro no upload da imagem: " +
+                erro
+            );
 
         }
 
 
-        /* URL pública */
+        /* ==========================
+           URL PÚBLICA
+        ========================== */
 
         let imagemURL =
         SUPABASE_URL +
@@ -734,17 +793,22 @@ async function adicionar(){
         encodeURIComponent(nomeArquivo);
 
 
-        /* Salvar no banco */
+        /* ==========================
+           SALVAR NO BANCO
+        ========================== */
 
         let resposta =
         await fetch(
             API,
             {
                 method:"POST",
+
                 headers:{
                     ...headers(),
-                    "Prefer":"return=representation"
+                    "Prefer":
+                    "return=representation"
                 },
+
                 body:JSON.stringify({
 
                     tipo:tipo,
@@ -765,7 +829,10 @@ async function adicionar(){
             let erro =
             await resposta.text();
 
-            throw new Error(erro);
+            throw new Error(
+                "Erro ao salvar conteúdo: " +
+                erro
+            );
 
         }
 
@@ -775,12 +842,24 @@ async function adicionar(){
         );
 
 
+        /* ==========================
+           LIMPAR CAMPOS
+        ========================== */
+
         document.getElementById("data")
         .value="";
 
-        document.getElementById("imagem")
-        .value="";
+        campoImagem.value="";
 
+        document.getElementById(
+            "nomeArquivo"
+        ).innerText =
+        "Nenhuma imagem selecionada";
+
+
+        /* ==========================
+           RECARREGAR
+        ========================== */
 
         await carregarConteudos();
 
@@ -795,6 +874,13 @@ async function adicionar(){
             "Erro ao adicionar:\n" +
             erro.message
         );
+
+    }finally{
+
+        botao.disabled = false;
+
+        botao.innerText =
+        "➕ Adicionar";
 
     }
 
@@ -871,11 +957,13 @@ function mostrarAdmin(){
 
         <div class="acoes">
 
-        <button onclick="editar(${item.id})">
+        <button type="button"
+        onclick="editar(${item.id})">
         ✏️ Editar
         </button>
 
-        <button onclick="excluir(${item.id})">
+        <button type="button"
+        onclick="excluir(${item.id})">
         🗑️ Excluir
         </button>
 
