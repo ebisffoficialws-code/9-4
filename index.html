@@ -87,6 +87,7 @@ button:hover{
     object-fit:contain;
     border-radius:10px;
     background:#0b0d12;
+    cursor:zoom-in;
 }
 
 .data{
@@ -143,6 +144,48 @@ button:hover{
     max-height:180px;
     object-fit:contain;
     border-radius:8px;
+    cursor:zoom-in;
+}
+
+/* ==============================
+   VISUALIZADOR DE IMAGEM
+============================== */
+
+#visualizador{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.96);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:10000;
+    padding:15px;
+}
+
+#imagemGrande{
+    max-width:100%;
+    max-height:95vh;
+    object-fit:contain;
+    border-radius:6px;
+}
+
+#fecharVisualizador{
+    position:absolute;
+    top:12px;
+    right:12px;
+    width:46px;
+    height:46px;
+    padding:0;
+    margin:0;
+    border-radius:50%;
+    background:#292e3b;
+    color:white;
+    font-size:22px;
+    z-index:10001;
+}
+
+#fecharVisualizador:hover{
+    background:#3a4050;
 }
 
 #loading{
@@ -171,6 +214,25 @@ button:hover{
 
 <header>9° 4</header>
 
+<!-- VISUALIZADOR -->
+
+<div id="visualizador" onclick="fecharImagem()">
+
+    <button
+        type="button"
+        id="fecharVisualizador"
+        onclick="event.stopPropagation(); fecharImagem();">
+        ✕
+    </button>
+
+    <img
+        id="imagemGrande"
+        src=""
+        onclick="event.stopPropagation();">
+
+</div>
+
+
 <section id="login" class="tela ativa">
 
 <h2>🔐 Entrar</h2>
@@ -183,6 +245,7 @@ placeholder="Digite a senha">
 <button type="button" onclick="entrar()">Entrar</button>
 
 </section>
+
 
 <section id="inicio" class="tela">
 
@@ -201,6 +264,7 @@ placeholder="Digite a senha">
 </button>
 
 </section>
+
 
 <section id="materias" class="tela">
 
@@ -225,6 +289,7 @@ placeholder="Digite a senha">
 
 </section>
 
+
 <section id="conteudos" class="tela">
 
 <button type="button" class="voltar" onclick="voltarMaterias()">
@@ -242,6 +307,7 @@ oninput="mostrarConteudos()">
 <div id="listaConteudos"></div>
 
 </section>
+
 
 <section id="admin" class="tela">
 
@@ -292,6 +358,7 @@ Nenhuma imagem selecionada
 </button>
 
 </section>
+
 
 <script>
 
@@ -366,9 +433,7 @@ async function carregarConteudos(){
         conteudos = await resposta.json();
 
         if(tipoAtual && materiaAtual){
-
             mostrarConteudos();
-
         }
 
         const admin =
@@ -479,24 +544,18 @@ function abrirTipo(tipo){
     tipoAtual = tipo;
 
     if(tipo === "atividade"){
-
         document.getElementById("tituloTipo")
         .innerText="📚 Atividades";
-
     }
 
     if(tipo === "prova"){
-
         document.getElementById("tituloTipo")
         .innerText="📝 Provas";
-
     }
 
     if(tipo === "trabalho"){
-
         document.getElementById("tituloTipo")
         .innerText="📂 Trabalhos";
-
     }
 
     tela("materias");
@@ -581,6 +640,36 @@ function formatarData(data){
 
 
 /* ==============================
+   ABRIR IMAGEM
+============================== */
+
+function abrirImagem(url){
+
+    document.getElementById("imagemGrande")
+    .src = url;
+
+    document.getElementById("visualizador")
+    .style.display = "flex";
+
+}
+
+
+/* ==============================
+   FECHAR IMAGEM
+============================== */
+
+function fecharImagem(){
+
+    document.getElementById("visualizador")
+    .style.display = "none";
+
+    document.getElementById("imagemGrande")
+    .src = "";
+
+}
+
+
+/* ==============================
    MOSTRAR CONTEÚDOS
 ============================== */
 
@@ -640,7 +729,9 @@ function mostrarConteudos(){
 
         card.innerHTML=`
 
-        <img src="${item.imagem}">
+        <img
+            src="${item.imagem}"
+            onclick="abrirImagem('${item.imagem}')">
 
         <div class="data">
         📅 ${formatarData(item.data)}
@@ -736,10 +827,6 @@ async function adicionar(){
         "⏳ Enviando...";
 
 
-        /* ==========================
-           NOME ÚNICO
-        ========================== */
-
         let nomeArquivo =
         Date.now() + "_" +
         arquivo.name.replace(
@@ -747,10 +834,6 @@ async function adicionar(){
             "_"
         );
 
-
-        /* ==========================
-           UPLOAD DA IMAGEM
-        ========================== */
 
         let upload =
         await fetch(
@@ -783,19 +866,11 @@ async function adicionar(){
         }
 
 
-        /* ==========================
-           URL PÚBLICA
-        ========================== */
-
         let imagemURL =
         SUPABASE_URL +
         "/storage/v1/object/public/imagens/" +
         encodeURIComponent(nomeArquivo);
 
-
-        /* ==========================
-           SALVAR NO BANCO
-        ========================== */
 
         let resposta =
         await fetch(
@@ -812,11 +887,8 @@ async function adicionar(){
                 body:JSON.stringify({
 
                     tipo:tipo,
-
                     materia:materia,
-
                     data:data,
-
                     imagem:imagemURL
 
                 })
@@ -842,10 +914,6 @@ async function adicionar(){
         );
 
 
-        /* ==========================
-           LIMPAR CAMPOS
-        ========================== */
-
         document.getElementById("data")
         .value="";
 
@@ -856,10 +924,6 @@ async function adicionar(){
         ).innerText =
         "Nenhuma imagem selecionada";
 
-
-        /* ==========================
-           RECARREGAR
-        ========================== */
 
         await carregarConteudos();
 
@@ -941,7 +1005,9 @@ function mostrarAdmin(){
 
         div.innerHTML=`
 
-        <img src="${item.imagem}">
+        <img
+            src="${item.imagem}"
+            onclick="abrirImagem('${item.imagem}')">
 
         <div style="margin-top:8px">
         <b>${nomeTipo}</b>
@@ -970,7 +1036,6 @@ function mostrarAdmin(){
         </div>
 
         `;
-
 
         lista.appendChild(div);
 
@@ -1135,6 +1200,19 @@ function sair(){
     tela("login");
 
 }
+
+
+/* ==============================
+   FECHAR IMAGEM COM ESC
+============================== */
+
+document.addEventListener("keydown",function(event){
+
+    if(event.key === "Escape"){
+        fecharImagem();
+    }
+
+});
 
 
 /* ==============================
